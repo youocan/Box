@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 
 /**
  * @author pj567
@@ -168,6 +170,7 @@ public class SearchActivity extends BaseActivity {
                 FastClickCheckUtil.check(v);
                 String wd = etSearch.getText().toString().trim();
                 if (!TextUtils.isEmpty(wd)) {
+                    closeKeyboard();
                     search(wd);
                 } else {
                     Toast.makeText(mContext, getString(R.string.search_input), Toast.LENGTH_SHORT).show();
@@ -231,6 +234,10 @@ public class SearchActivity extends BaseActivity {
         setLoadSir(llLayout);
     }
 
+    private void closeKeyboard() {
+        InputMethodManager imm = (InputMethodManager) getApplicationContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(etSearch.getWindowToken(), 0);
+    }
     private void initViewModel() {
         sourceViewModel = new ViewModelProvider(this).get(SourceViewModel.class);
     }

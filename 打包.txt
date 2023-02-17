@@ -1,0 +1,11 @@
+1. 添加上游仓库
+git remote add upstream https://github.com/takagen99/Box.git
+
+2. 拉取上游变动
+git fetch upstream
+
+3. 合并（这一步也可以使用 merge）
+git merge upstream/mian
+
+更新自己远端仓库分支
+git push origin main

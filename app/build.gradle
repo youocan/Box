@@ -4,11 +4,15 @@ def static buildTime() {
     return new Date().format("yyyyMMdd_HHmm", TimeZone.getTimeZone("GMT+08:00"))
 }
 
+Properties properties = new Properties()
+InputStream inputStream = project.rootProject.file('local.properties').newDataInputStream()
+properties.load(inputStream)
+
 android {
     compileSdkVersion 30
 
     defaultConfig {
-        applicationId 'com.github.tvbox.osc.tk'
+        applicationId 'com.haitao.tvbox'
         minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
@@ -25,7 +29,15 @@ android {
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
     }
+    signingConfigs {
+        release {
+            storeFile file("android.keystore")
+            storePassword properties.getProperty("storePassword")
+            keyAlias properties.getProperty("keyAlias")
+            keyPassword properties.getProperty("storePassword")
+        }
 
+    }
     buildTypes {
         debug {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -34,6 +46,7 @@ android {
             ndk {
                 abiFilters 'armeabi-v7a'
             }
+	        signingConfig signingConfigs.release
         }
         release {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
@@ -42,6 +55,7 @@ android {
             ndk {
                 abiFilters 'armeabi-v7a'
             }
+	        signingConfig signingConfigs.release
         }
     }
 
