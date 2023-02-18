@@ -8,12 +8,15 @@ import android.view.SurfaceHolder;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlaybackException;
+import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.LoadControl;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.RenderersFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.analytics.AnalyticsCollector;
+import com.google.android.exoplayer2.analytics.DefaultAnalyticsCollector;
 import com.google.android.exoplayer2.source.DefaultMediaSourceFactory;
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
@@ -22,6 +25,7 @@ import com.google.android.exoplayer2.trackselection.TrackSelector;
 import com.google.android.exoplayer2.upstream.DefaultBandwidthMeter;
 import com.google.android.exoplayer2.util.Clock;
 import com.google.android.exoplayer2.util.EventLogger;
+import com.google.android.exoplayer2.util.Log;
 import com.google.android.exoplayer2.video.VideoSize;
 
 import java.util.Map;
@@ -33,7 +37,7 @@ import xyz.doikki.videoplayer.player.VideoViewManager;
 public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     protected Context mAppContext;
-    protected SimpleExoPlayer mInternalPlayer;
+    protected ExoPlayer mInternalPlayer;
     protected MediaSource mMediaSource;
     protected ExoMediaSourceHelper mMediaSourceHelper;
 
@@ -44,6 +48,9 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     private LoadControl mLoadControl;
     private RenderersFactory mRenderersFactory;
     private TrackSelector mTrackSelector;
+    private int errorCode = -100;
+    private String path;
+    private Map<String, String> headers;
 
     public ExoMediaPlayer(Context context) {
         mAppContext = context.getApplicationContext();
@@ -52,15 +59,23 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void initPlayer() {
-        mInternalPlayer = new SimpleExoPlayer.Builder(
-                mAppContext,
-                mRenderersFactory == null ? mRenderersFactory = new DefaultRenderersFactory(mAppContext) : mRenderersFactory,
-                mTrackSelector == null ? mTrackSelector = new DefaultTrackSelector(mAppContext) : mTrackSelector,
-                new DefaultMediaSourceFactory(mAppContext),
-                mLoadControl == null ? mLoadControl = new DefaultLoadControl() : mLoadControl,
-                DefaultBandwidthMeter.getSingletonInstance(mAppContext),
-                new AnalyticsCollector(Clock.DEFAULT))
+
+        mInternalPlayer = new ExoPlayer.Builder(mAppContext).setLoadControl(new DefaultLoadControl())
+                .setRenderersFactory(mRenderersFactory == null ? mRenderersFactory = new DefaultRenderersFactory(mAppContext) : mRenderersFactory)
+                .setTrackSelector( mTrackSelector == null ? mTrackSelector = new DefaultTrackSelector(mAppContext) : mTrackSelector)
+                .setLoadControl(mLoadControl == null ? mLoadControl = new DefaultLoadControl() : mLoadControl)
                 .build();
+
+//        mInternalPlayer = new ExoPlayer.Builder(
+//                mAppContext,
+//                mRenderersFactory == null ? mRenderersFactory = new DefaultRenderersFactory(mAppContext) : mRenderersFactory,
+//                mTrackSelector == null ? mTrackSelector = new DefaultTrackSelector(mAppContext) : mTrackSelector,
+//                new DefaultMediaSourceFactory(mAppContext),
+//                mLoadControl == null ? mLoadControl = new DefaultLoadControl() : mLoadControl,
+//                DefaultBandwidthMeter.getSingletonInstance(mAppContext),
+//                new DefaultAnalyticsCollector(Clock.DEFAULT))
+//                .build();
+
         setOptions();
 
         //播放器日志
@@ -85,7 +100,10 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void setDataSource(String path, Map<String, String> headers) {
-        mMediaSource = mMediaSourceHelper.getMediaSource(path, headers);
+        this.path = path;
+        this.headers = headers;
+        mMediaSource = mMediaSourceHelper.getMediaSource(path, headers,false,errorCode);
+        errorCode = -1;
     }
 
     @Override
@@ -272,11 +290,26 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     }
 
     @Override
-    public void onPlayerError(ExoPlaybackException error) {
-        if (mPlayerEventListener != null) {
-            mPlayerEventListener.onError();
+    public void onPlayerError(PlaybackException error) {
+        errorCode =  error.errorCode;
+        if (path != null) {
+            setDataSource(path,headers);
+            path = null;
+            prepareAsync();
+            start();
+        }else{
+            if (mPlayerEventListener != null) {
+                mPlayerEventListener.onError();
+            }
         }
     }
+
+//    @Override
+//    public void onPlayerError(ExoPlaybackException error) {
+//        if (mPlayerEventListener != null) {
+//            mPlayerEventListener.onError();
+//        }
+//    }
 
     @Override
     public void onVideoSizeChanged(VideoSize videoSize) {
