@@ -6,7 +6,6 @@ import android.text.TextUtils;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.database.ExoDatabaseProvider;
 import com.google.android.exoplayer2.ext.okhttp.OkHttpDataSource;
 import com.google.android.exoplayer2.ext.rtmp.RtmpDataSourceFactory;
@@ -77,11 +76,11 @@ public final class ExoMediaSourceHelper {
     public MediaSource getMediaSource(String uri, boolean isCache) {
         return getMediaSource(uri, null, isCache);
     }
+
     public MediaSource getMediaSource(String uri, Map<String, String> headers, boolean isCache) {
         return getMediaSource(uri, headers, isCache,-1);
     }
     public MediaSource getMediaSource(String uri, Map<String, String> headers, boolean isCache,int errorCode) {
-
         Uri contentUri = Uri.parse(uri);
         if ("rtmp".equals(contentUri.getScheme())) {
             return new ProgressiveMediaSource.Factory(new RtmpDataSourceFactory(null))
@@ -89,7 +88,6 @@ public final class ExoMediaSourceHelper {
         } else if ("rtsp".equals(contentUri.getScheme())) {
             return new RtspMediaSource.Factory().createMediaSource(MediaItem.fromUri(contentUri));
         }
-
         int contentType = inferContentType(uri);
         DataSource.Factory factory;
         if (isCache) {
@@ -100,13 +98,11 @@ public final class ExoMediaSourceHelper {
         if (mHttpDataSourceFactory != null) {
             setHeaders(headers);
         }
-
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED) {
+        if (errorCode == 0) {
             MediaItem.Builder builder = new MediaItem.Builder().setUri(uri);
             builder.setMimeType(MimeTypes.APPLICATION_M3U8);
             return  new DefaultMediaSourceFactory(getDataSourceFactory(), getExtractorsFactory()).createMediaSource(getMediaItem(uri, errorCode));
         }
-
         switch (contentType) {
             case C.TYPE_DASH:
                 return new DashMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(contentUri));
@@ -117,10 +113,9 @@ public final class ExoMediaSourceHelper {
                 return new ProgressiveMediaSource.Factory(factory).createMediaSource(MediaItem.fromUri(contentUri));
         }
     }
-
     private static MediaItem getMediaItem(String uri, int errorCode) {
         MediaItem.Builder builder = new MediaItem.Builder().setUri(Uri.parse(uri.trim().replace("\\", "")));
-        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED) builder.setMimeType(MimeTypes.APPLICATION_M3U8);
+        if (errorCode == 0) builder.setMimeType(MimeTypes.APPLICATION_M3U8);
         return builder.build();
     }
     private static synchronized ExtractorsFactory getExtractorsFactory() {
