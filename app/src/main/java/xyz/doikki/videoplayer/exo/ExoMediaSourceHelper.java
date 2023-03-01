@@ -6,6 +6,7 @@ import android.text.TextUtils;
 
 import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.database.ExoDatabaseProvider;
 
 import com.google.android.exoplayer2.ext.rtmp.RtmpDataSourceFactory;
@@ -30,7 +31,6 @@ import com.google.android.exoplayer2.util.Util;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.util.Iterator;
 import java.util.Map;
 
 import okhttp3.OkHttpClient;
@@ -98,7 +98,7 @@ public final class ExoMediaSourceHelper {
         if (mHttpDataSourceFactory != null) {
             setHeaders(headers);
         }
-        if (errorCode == 0) {
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED) {
             MediaItem.Builder builder = new MediaItem.Builder().setUri(uri);
             builder.setMimeType(MimeTypes.APPLICATION_M3U8);
             return  new DefaultMediaSourceFactory(getDataSourceFactory(), getExtractorsFactory()).createMediaSource(getMediaItem(uri, errorCode));
@@ -115,7 +115,7 @@ public final class ExoMediaSourceHelper {
     }
     private static MediaItem getMediaItem(String uri, int errorCode) {
         MediaItem.Builder builder = new MediaItem.Builder().setUri(Uri.parse(uri.trim().replace("\\", "")));
-        if (errorCode == 0) builder.setMimeType(MimeTypes.APPLICATION_M3U8);
+        if (errorCode == PlaybackException.ERROR_CODE_PARSING_CONTAINER_UNSUPPORTED) builder.setMimeType(MimeTypes.APPLICATION_M3U8);
         return builder.build();
     }
     private static synchronized ExtractorsFactory getExtractorsFactory() {
