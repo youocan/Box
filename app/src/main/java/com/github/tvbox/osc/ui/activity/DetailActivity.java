@@ -865,6 +865,7 @@ public class DetailActivity extends BaseActivity {
 
     @Override
     public void onBackPressed() {
+        boolean showPreview = Hawk.get(HawkConfig.SHOW_PREVIEW, true);
         if (fullWindows) {
             if (playFragment.onBackPressed())
                 return;
@@ -876,6 +877,8 @@ public class DetailActivity extends BaseActivity {
                 seriesFlagFocus.requestFocus();
                 return;
             }
+        } else if (showPreview) {
+            playFragment.mVideoView.release();
         }
         super.onBackPressed();
     }

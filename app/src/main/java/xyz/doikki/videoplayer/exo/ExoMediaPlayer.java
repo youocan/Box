@@ -10,7 +10,6 @@ import android.view.SurfaceHolder;
 import androidx.annotation.NonNull;
 
 import com.github.tvbox.osc.base.App;
-import com.github.tvbox.osc.util.HawkConfig;
 import com.github.tvbox.osc.util.LOG;
 import com.google.android.exoplayer2.DefaultLoadControl;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
@@ -19,19 +18,15 @@ import com.google.android.exoplayer2.LoadControl;
 import com.google.android.exoplayer2.PlaybackException;
 import com.google.android.exoplayer2.PlaybackParameters;
 import com.google.android.exoplayer2.Player;
-
 import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-
 import com.google.android.exoplayer2.video.VideoSize;
-import com.orhanobut.hawk.Hawk;
 
 import java.util.Map;
 
 import xyz.doikki.videoplayer.player.AbstractPlayer;
-
 
 public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
@@ -67,7 +62,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
             mTrackSelector = new DefaultTrackSelector(mAppContext);
         }
         if (mLoadControl == null) {
-            mLoadControl =new DefaultLoadControl();
+            mLoadControl = new DefaultLoadControl();
         }
         mTrackSelector.setParameters(mTrackSelector.getParameters().buildUpon().setTunnelingEnabled(true));
         /*mMediaPlayer = new SimpleExoPlayer.Builder(
@@ -97,7 +92,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
     public void setDataSource(String path, Map<String, String> headers) {
         this.path = path;
         this.headers = headers;
-        mMediaSource = mMediaSourceHelper.getMediaSource(path, headers,false,errorCode);
+        mMediaSource = mMediaSourceHelper.getMediaSource(path, headers, false, errorCode);
         errorCode = -1;
     }
 
@@ -279,7 +274,7 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
         lastTimeStamp = time;
         //当前总接收量存到上次接收总量这个变量，供下次计算用
         lastTotalRxBytes = total;
-        LOG.e("TcpSpeed",speed * 1024 + "");
+        LOG.e("TcpSpeed", speed * 1024 + "");
         return speed * 1024;
     }
 
@@ -317,14 +312,14 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
 
     @Override
     public void onPlayerError(@NonNull PlaybackException error) {
-        errorCode =  error.errorCode;
-        Log.e("tag--",""+error.errorCode);
+        errorCode = error.errorCode;
+        Log.e("tag--", "" + error.errorCode);
         if (path != null) {
-            setDataSource(path,headers);
+            setDataSource(path, headers);
             path = null;
             prepareAsync();
             start();
-        }else{
+        } else {
             if (mPlayerEventListener != null) {
                 mPlayerEventListener.onError();
             }
@@ -340,6 +335,5 @@ public class ExoMediaPlayer extends AbstractPlayer implements Player.Listener {
             }
         }
     }
-
 
 }
