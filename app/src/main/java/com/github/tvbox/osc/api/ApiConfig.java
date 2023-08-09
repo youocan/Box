@@ -407,12 +407,11 @@ public class ApiConfig {
                         System.out.println("Live URL :" + extUrlFix);
                         putLiveHistory(extUrlFix);
                         // Overwrite with Live URL from Settings
-                        if (StringUtils.isBlank(liveURL)) {
-                            Hawk.put(HawkConfig.LIVE_URL, extUrlFix);
-                        } else {
+                        if (StringUtils.isBlank(extUrlFix)) {
                             extUrlFix = liveURL;
+                        } else {
+                            Hawk.put(HawkConfig.LIVE_URL, extUrlFix);
                         }
-
                         // Final Live URL
                         liveURL_final = extUrlFix;
 
