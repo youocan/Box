@@ -196,4 +196,40 @@ public class FileUtils {
         return getExternalCacheDir().getAbsolutePath();
     }
 
+    public static String getCachePath() {
+        return getCacheDir().getAbsolutePath();
+    }
+    
+    public static void cleanPlayerCache() {
+        String thunderCachePath = getCachePath() + "/thunder/";
+        File thunderCacheDir = new File(thunderCachePath);
+        try {
+            if (thunderCacheDir.exists()) recursiveDelete(thunderCacheDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        String ijkCachePath = getExternalCachePath() + "/ijkcaches/";
+        File ijkCacheDir = new File(ijkCachePath);
+        try {
+            if (ijkCacheDir.exists()) recursiveDelete(ijkCacheDir);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String getFileNameWithoutExt(String filePath){
+        if(TextUtils.isEmpty(filePath)) return "";
+        String fileName = filePath;
+        int p = fileName.lastIndexOf(File.separatorChar);
+        if(p != -1){
+            fileName = fileName.substring(p + 1);
+        }
+        p = fileName.indexOf('.');
+        if(p != -1){
+            fileName = fileName.substring(0, p);
+        }
+        return fileName;
+    }
+
 }
